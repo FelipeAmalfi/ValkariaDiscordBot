@@ -55,7 +55,6 @@ const mapa = {
   tanit: 'templo',
   teclis: 'biblioteca',
   tharuk: 'mercado',
-  'tonhão': 'churrascaria',
   viridiane: 'bosque'
 };
 
@@ -91,7 +90,11 @@ function buscarLocal(nome) {
 function formatNPC(npc) {
   if (!npc) return 'NPC inválido.';
 
-  return `**Nome:** ${npc.Nome || 'N/A'}\n**Local:** ${npc.Local || 'N/A'}\n**Descrição:** ${npc.Descrição || 'N/A'}\n**Cordial (1 a 3 PA):** ${npc.Cordial || 'N/A'}\n**Leal (4 a 6 PA):** ${npc.Leal || 'N/A'}\n**Íntimo (7 PA):** ${npc.Intimo || 'N/A'}\n**Interesse(s):** ${npc['Interesse(s)'] || 'N/A'}\n**Final Quest:** ${npc['Final Quest'] || 'N/A'}`;
+  const cordialValue = npc.Cordial || npc['Cordial (1 a 3 PA)'] || npc['cordial'] || 'N/A';
+  const lealValue = npc.Leal || npc['Leal (4 a 6 PA)'] || npc['leal'] || 'N/A';
+  const intimoValue = npc.Intimo || npc['Íntimo (7 PA)'] || npc['Intimo'] || npc['íntimo'] || 'N/A';
+
+  return `**Nome:** ${npc.Nome || 'N/A'}\n**Local:** ${npc.Local || 'N/A'}\n**Descrição:** ${npc.Descrição || 'N/A'}\n**Cordial (1 a 3 PA):** ${cordialValue}\n**Leal (4 a 6 PA):** ${lealValue}\n**Íntimo (7 PA):** ${intimoValue}`;
 }
 
 function formatLocal(result) {
