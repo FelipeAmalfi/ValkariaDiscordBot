@@ -11,6 +11,10 @@ const client = new Client({
   ]
 });
 
+client.once("ready", () => {
+  console.log(`Bot online: ${client.user.tag}`);
+});
+
 // ===== CARREGAR XLSX =====
 const workbook = XLSX.readFile("NPC's Valkaria.xlsx");
 
@@ -130,9 +134,11 @@ ${data.personagens.length ? data.personagens.join("\n") : "N/A"}
 
 // ===== EVENTO =====
 client.on("messageCreate", msg => {
-  if (!msg.content.startsWith("/")) return;
+  if (msg.author.bot) return;
+  if (!msg.guild) return;
+  if (!msg.content.startsWith("!")) return;
 
-  const [cmd, ...args] = msg.content.split(" ");
+  const [cmd, ...args] = msg.content.slice(1).split(" ");
   const query = args.join(" ");
 
   if (cmd === "/npc") {
