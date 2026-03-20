@@ -35,7 +35,7 @@ const mapa = {
   barossa: 'biblioteca',
   bragi: 'taverna',
   caliandre: 'arena',
-  "eh'mmed": 'biblioteca',
+  ehmmed: 'biblioteca', // mapeado sem apóstrofo para evitar escape de string
   frann: 'laboratório',
   harko: 'oficina',
   juno: 'arena',
@@ -61,7 +61,13 @@ const mapa = {
 function buscarNPC(nome) {
   const termo = normalize(nome);
   if (!termo) return [];
-  return npcs.filter(item => normalize(item.Nome).includes(termo));
+
+  return npcs.filter(item => {
+    const nomeValor = normalize(item.Nome || '');
+    const titulo = normalize(item.Título || item.Titulo || item.Title || '');
+
+    return nomeValor.includes(termo) || titulo.includes(termo);
+  });
 }
 
 function buscarLocal(nome) {
@@ -72,6 +78,11 @@ function buscarLocal(nome) {
   const personagens = Object.entries(mapa)
     .filter(([_, loc]) => normalize(loc) === termo)
     .map(([nome]) => nome);
+
+  // suporte a variação com/sem apóstrofo
+  if (termo === "eh'mmed" || termo === 'ehmmed') {
+    personagens.push('ehmmed');
+  }
 
   return { local, personagens };
 }
