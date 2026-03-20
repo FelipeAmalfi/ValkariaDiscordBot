@@ -99,44 +99,98 @@ const client = new Client({
   ]
 });
 
-client.once('ready', () => {
+const slashCommands = [
+  {
+    name: 'npc',
+    description: 'Buscar NPCs por nome',
+    options: [
+      {
+        name: 'nome',
+        type: 3, // STRING
+        description: 'Nome ou fragmento do NPC',
+        required: true
+      }
+    ]
+  },
+  {
+    name: 'local',
+    description: 'Buscar locais por nome',
+    options: [
+      {
+        name: 'nome',
+        type: 3,
+        description: 'Nome ou fragmento do local',
+        required: true
+      }
+    ]
+  },
+  {
+    name: 'help',
+    description: 'Exibe ajuda dos comandos'
+  }
+];
+
+client.once('ready', async () => {
   console.log(`Bot online: ${client.user.tag}`);
+
+  const token = process.env.TOKEN;
+  if (!token) {
+    console.error('TOKEN não definido. Adicione a variável de ambiente TOKEN.');
+    process.exit(1);
+  }
+
+  const guildId = process.env.GUILD_ID;
+
+  if (guildId) {
+    const guild = await client.guilds.fetch(guildId);
+    if (!guild) {
+      console.error('Guilda não encontrada com o GUILD_ID informado.');
+      return;
+    }
+    await guild.commands.set(slashCommands);
+    console.log('Slash commands registrados na guilda', guildId);
+  } else {
+    await client.application.commands.set(slashCommands);
+    console.log('Slash commands registrados globalmente');
+  }
 });
 
-const commandHandlers = {
-  npc: (msg, query) => {
-    const results = buscarNPC(query);
-    if (!results.length) return msg.reply('Nenhum NPC encontrado.');
-    return Promise.all(results.slice(0, 10).map(found => msg.reply(formatNPC(found))));
-  },
-  local: (msg, query) => {
-    const result = buscarLocal(query);
-    return msg.reply(formatLocal(result));
-  },
-  help: msg => {
-    return msg.reply(`Comandos válidos:\n${PREFIX}npc <nome>\n${PREFIX}local <nome>\n${PREFIX}help`);
-  }
-};
+client.on('interactionCreate', async interaction => {
+  if (!interaction.isChatInputCommand()) return;
 
-client.on('messageCreate', async msg => {
-  if (msg.author.bot) return;
-  if (!msg.guild) return;
-  if (!msg.content.startsWith(PREFIX)) return;
-
-  const [command, ...args] = msg.content.slice(PREFIX.length).trim().split(/\s+/);
-  if (!command) return;
-
-  const handler = commandHandlers[command.toLowerCase()];
-  if (!handler) {
-    await msg.reply(`Comando não reconhecido. Use ${PREFIX}help para ajuda.`);
-    return;
-  }
+  const { commandName } = interaction;
 
   try {
-    await handler(msg, args.join(' '));
+    if (commandName === 'npc') {
+      const query = interaction.options.getString('nome', true);
+      const results = buscarNPC(query);
+      if (!results.length) {
+        await interaction.reply('Nenhum NPC encontrado.');
+        return;
+      }
+
+      for (const npc of results.slice(0, 10)) {
+        await interaction.channel.send(formatNPC(npc));
+      }
+      if (!interaction.replied && !interaction.deferred) {
+        await interaction.reply({ content: `Mostrando ${Math.min(results.length, 10)} NPC(s).`, ephemeral: true });
+      }
+
+    } else if (commandName === 'local') {
+      const query = interaction.options.getString('nome', true);
+      const result = buscarLocal(query);
+      await interaction.reply(formatLocal(result));
+
+    } else if (commandName === 'help') {
+      await interaction.reply('Use /npc <nome> ou /local <nome>.');
+    }
   } catch (error) {
-    console.error('Erro no comando:', error);
-    msg.reply('Ocorreu um erro ao processar este comando. Tente novamente mais tarde.');
+    console.error('Erro no interactionCreate:', error);
+    if (interaction.replied || interaction.deferred) {
+      await interaction.followUp('Ocorreu um erro ao processar o comando.');
+    } else {
+      await interaction.reply('Ocorreu um erro ao processar o comando.');
+    }
   }
 });
 
