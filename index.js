@@ -87,23 +87,40 @@ function buscarLocal(nome) {
   return { local, personagens };
 }
 
+function cleanLabel(value) {
+  if (!value && value !== 0) return 'N/A';
+  const text = String(value);
+  return text.replace(/\s*\([^)]*\)/g, '').trim();
+}
+
 function formatNPC(npc) {
   if (!npc) return 'NPC inválido.';
 
-  const cordialValue = npc.Cordial || npc['Cordial (1 a 3 PA)'] || npc['cordial'] || 'N/A';
-  const lealValue = npc.Leal || npc['Leal (4 a 6 PA)'] || npc['leal'] || 'N/A';
-  const intimoValue = npc.Intimo || npc['Íntimo (7 PA)'] || npc['Intimo'] || npc['íntimo'] || 'N/A';
+  const cordialValue = cleanLabel(npc.Cordial || npc['Cordial (1 a 3 PA)'] || npc['cordial']);
+  const lealValue = cleanLabel(npc.Leal || npc['Leal (4 a 6 PA)'] || npc['leal']);
+  const intimoValue = cleanLabel(
+    npc['Íntimo'] || npc['íntimo'] || npc.Intimo || npc['Intimo'] || npc['Íntimo (7 PA)'] || npc['Intimo (7 PA)']
+  );
 
-  return `**Nome:** ${npc.Nome || 'N/A'}\n**Local:** ${npc.Local || 'N/A'}\n**Descrição:** ${npc.Descrição || 'N/A'}\n**Cordial (1 a 3 PA):** ${cordialValue}\n**Leal (4 a 6 PA):** ${lealValue}\n**Íntimo (7 PA):** ${intimoValue}`;
+  const nome = cleanLabel(npc.Nome || 'N/A');
+  const local = cleanLabel(npc.Local || 'N/A');
+  const descricao = cleanLabel(npc.Descrição || npc.Descricao || 'N/A');
+
+  return `**Nome:** ${nome}\n**Local:** ${local}\n**Descrição:** ${descricao}\n**Cordial (1 a 3 PA):** ${cordialValue}\n**Leal (4 a 6 PA):** ${lealValue}\n**Íntimo (7 PA):** ${intimoValue}`;
 }
 
 function formatLocal(result) {
   if (!result?.local) return 'Local não encontrado.';
 
   const local = result.local;
+  const localName = cleanLabel(local.Local || local.Local || 'N/A');
+  const funcao = cleanLabel(local.Função || local.Funcao || 'N/A');
+  const descricao = cleanLabel(local.Descrição || local.Descricao || 'N/A');
+  const servico = cleanLabel(local.Serviço || local.Servico || 'N/A');
+  const honraria = cleanLabel(local.Honraria || 'N/A');
   const personagens = result.personagens.length ? result.personagens.join(', ') : 'N/A';
 
-  return `**Local:** ${local.Local || 'N/A'}\n**Função:** ${local.Função || 'N/A'}\n**Descrição:** ${local.Descrição || 'N/A'}\n**Serviço:** ${local.Serviço || 'N/A'}\n**Honraria:** ${local.Honraria || 'N/A'}\n**Personagens no Local:** ${personagens}`;
+  return `**Local:** ${localName}\n**Função:** ${funcao}\n**Descrição:** ${descricao}\n**Serviço:** ${servico}\n**Honraria:** ${honraria}\n**Personagens no Local:** ${personagens}`;
 }
 
 const client = new Client({
