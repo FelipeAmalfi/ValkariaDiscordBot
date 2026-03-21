@@ -120,14 +120,13 @@ function buscarBonus(termo) {
   return npcs.reduce((matches, npc) => {
     const nome = npc.Nome || npc.nome || 'N/A';
     const campos = [
-      { key: 'cordial', type: 'Cordial' },
-      { key: 'leal', type: 'Leal' },
-      { key: 'íntimo', type: 'Íntimo' },
-      { key: 'intimo', type: 'Íntimo' }
+      { key: 'Cordial (1 a 3 PA)', type: 'Cordial' },
+      { key: 'Leal (4 a 6 PA)', type: 'Leal' },
+      { key: 'Íntimo (7 PA)', type: 'Íntimo' }
     ];
 
     campos.forEach(campo => {
-      const valor = cleanLabel(npc[campo.key] || npc[campo.key.charAt(0).toUpperCase() + campo.key.slice(1)] || '');
+      const valor = cleanLabel(npc[campo.key] || '');
       if (valor !== 'N/A' && normalize(valor).includes(normalizedTermo)) {
         matches.push(`${nome} - Tipo do Bonus(${campo.type}): ${valor}`);
       }
