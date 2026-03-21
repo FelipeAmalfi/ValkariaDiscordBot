@@ -89,8 +89,12 @@ function buscarLocal(nome) {
 
 function cleanLabel(value) {
   if (!value && value !== 0) return 'N/A';
-  const text = String(value);
-  return text.replace(/\s*\([^)]*\)/g, '').trim();
+  const text = String(value)
+    .replace(/\s*\([^)]*\)/g, '') // remove texto entre parênteses
+    .trim()
+    .replace(/\.+$/g, '') // remove pontos finais em excesso
+    .trim();
+  return text || 'N/A';
 }
 
 function formatNPC(npc) {
@@ -99,7 +103,7 @@ function formatNPC(npc) {
   const cordialValue = cleanLabel(npc.Cordial || npc['Cordial (1 a 3 PA)'] || npc['cordial']);
   const lealValue = cleanLabel(npc.Leal || npc['Leal (4 a 6 PA)'] || npc['leal']);
   const intimoValue = cleanLabel(
-    npc['Íntimo'] || npc['íntimo'] || npc.Intimo || npc['Intimo'] || npc['Íntimo (7 PA)'] || npc['Intimo (7 PA)']
+    npc['Íntimo'] || npc['íntimo'] || npc.Intimo || npc['Intimo'] || npc['Íntimo (7 PA).'] || npc['Intimo (7 PA)']
   );
 
   const nome = cleanLabel(npc.Nome || 'N/A');
