@@ -113,6 +113,30 @@ function formatNPC(npc) {
   return `**Nome:** ${nome}\n**Local:** ${local}\n**Descrição:** ${descricao}\n**Cordial (1 a 3 PA):** ${cordialValue}\n**Leal (4 a 6 PA):** ${lealValue}\n**Íntimo (7 PA):** ${intimoValue}`;
 }
 
+function buscarBonus(termo) {
+  const normalizedTermo = normalize(termo);
+  if (!normalizedTermo) return [];
+
+  return npcs.reduce((matches, npc) => {
+    const nome = npc.Nome || npc.nome || 'N/A';
+    const campos = [
+      { key: 'cordial', type: 'Cordial' },
+      { key: 'leal', type: 'Leal' },
+      { key: 'íntimo', type: 'Íntimo' },
+      { key: 'intimo', type: 'Íntimo' }
+    ];
+
+    campos.forEach(campo => {
+      const valor = cleanLabel(npc[campo.key] || npc[campo.key.charAt(0).toUpperCase() + campo.key.slice(1)] || '');
+      if (valor !== 'N/A' && normalize(valor).includes(normalizedTermo)) {
+        matches.push(`${nome} - Tipo do Bonus(${campo.type}): ${valor}`);
+      }
+    });
+
+    return matches;
+  }, []);
+}
+
 function formatLocal(result) {
   if (!result?.local) return 'Local não encontrado.';
 
@@ -163,6 +187,18 @@ const slashCommands = [
   {
     name: 'help',
     description: 'Exibe ajuda dos comandos'
+  },
+  {
+    name: 'bonus',
+    description: 'Buscar bônus por texto parcial em cordial, leal ou íntimo',
+    options: [
+      {
+        name: 'texto',
+        type: 3, // STRING
+        description: 'Texto parcial a buscar nos bônus',
+        required: true
+      }
+    ]
   }
 ];
 
@@ -217,8 +253,20 @@ client.on('interactionCreate', async interaction => {
       const result = buscarLocal(query);
       await interaction.reply(formatLocal(result));
 
+    } else if (commandName === 'bonus') {
+      const texto = interaction.options.getString('texto', true);
+      const resultados = buscarBonus(texto);
+
+      if (!resultados.length) {
+        await interaction.reply('Nenhum bônus encontrado para o texto informado.');
+        return;
+      }
+
+      const resposta = resultados.slice(0, 10).join('\n');
+      await interaction.reply(resposta);
+
     } else if (commandName === 'help') {
-      await interaction.reply('Use /npc <nome> ou /local <nome>.');
+      await interaction.reply('Use /npc <nome>, /local <nome>, /bonus <texto>');
     }
   } catch (error) {
     console.error('Erro no interactionCreate:', error);
