@@ -97,6 +97,16 @@ function cleanLabel(value) {
   return text || 'N/A';
 }
 
+function getField(item, keys) {
+  const normalizedKeys = keys.map(normalize);
+  for (const key of Object.keys(item || {})) {
+    if (normalizedKeys.includes(normalize(key))) {
+      return item[key];
+    }
+  }
+  return undefined;
+}
+
 function formatNPC(npc) {
   if (!npc) return 'NPC inválido.';
 
@@ -140,11 +150,11 @@ function formatLocal(result) {
   if (!result?.local) return 'Local não encontrado.';
 
   const local = result.local;
-  const localName = cleanLabel(local.Local || local.Local || 'N/A');
-  const funcao = cleanLabel(local.Função || local.Funcao || 'N/A');
-  const descricao = cleanLabel(local.Descrição || local.Descricao || 'N/A');
-  const servico = cleanLabel(local.Serviço || local.Servico || 'N/A');
-  const honraria = cleanLabel(local.Honraria || 'N/A');
+  const localName = cleanLabel(getField(local, ['Local', 'local']) || 'N/A');
+  const funcao = cleanLabel(getField(local, ['Função', 'Funcao', 'funcao']) || 'N/A');
+  const descricao = cleanLabel(getField(local, ['Descrição', 'Descricao', 'descrição', 'descricao']) || 'N/A');
+  const servico = cleanLabel(getField(local, ['Serviço', 'Servico', 'serviço', 'servico']) || 'N/A');
+  const honraria = cleanLabel(getField(local, ['Honraria', 'Honrária', 'honraria', 'honrária']) || 'N/A');
   const personagens = result.personagens.length ? result.personagens.join(', ') : 'N/A';
 
   return `**Local:** ${localName}\n**Função:** ${funcao}\n**Descrição:** ${descricao}\n**Serviço:** ${servico}\n**Honraria:** ${honraria}\n**Personagens no Local:** ${personagens}`;
